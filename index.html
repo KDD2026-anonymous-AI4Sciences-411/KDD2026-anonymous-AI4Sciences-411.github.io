@@ -1,1124 +1,1305 @@
-<!DOCTYPE HTML>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE-RL: LLM as an Excellent RL Researcher | KDD 2026</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0f;
+            --color-surface: #12121a;
+            --color-surface-2: #1a1a26;
+            --color-border: rgba(255,255,255,0.06);
+            --color-text: #e8e6e3;
+            --color-text-dim: #8a8897;
+            --color-accent: #6366f1;
+            --color-accent-2: #22d3ee;
+            --color-accent-glow: rgba(99, 102, 241, 0.15);
+            --color-gold: #f59e0b;
+            --color-success: #10b981;
+            --color-rose: #f43f5e;
+            --font-display: 'Instrument Serif', Georgia, serif;
+            --font-body: 'DM Sans', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --max-width: 1000px;
+            --radius: 12px;
+        }
 
-  <title>Dor Verbin</title>
-  
-  <meta name="author" content="Dor Verbin">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <link rel="stylesheet" type="text/css" href="stylesheet.css">
-	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.7;
+            font-size: 16px;
+            overflow-x: hidden;
+        }
+
+        /* ── Grain Overlay ── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ── Hero Section ── */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 24px;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 900px;
+            background: radial-gradient(circle, var(--color-accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            animation: pulse 8s ease-in-out infinite alternate;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+            100% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+        }
+
+        .hero-content {
+            position: relative;
+            max-width: var(--max-width);
+            text-align: center;
+            z-index: 1;
+        }
+
+        .venue-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 100px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(34, 211, 238, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            letter-spacing: 0.05em;
+            color: var(--color-accent-2);
+            margin-bottom: 36px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .venue-badge .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--color-accent-2);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--color-accent-2);
+            -webkit-text-fill-color: var(--color-accent-2);
+        }
+
+        .subtitle {
+            font-size: clamp(16px, 2vw, 20px);
+            color: var(--color-text-dim);
+            max-width: 720px;
+            margin: 0 auto 40px;
+            line-height: 1.65;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .author-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px 24px;
+            margin-bottom: 36px;
+            animation: fadeInUp 0.8s ease-out 0.5s both;
+        }
+
+        .author {
+            font-size: 17px;
+            color: var(--color-text);
+            font-weight: 500;
+        }
+
+        .author sup {
+            font-size: 11px;
+            color: var(--color-accent);
+            margin-left: 2px;
+        }
+
+        .affiliations {
+            color: var(--color-text-dim);
+            font-size: 14px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.55s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 28px;
+            border-radius: 100px;
+            font-family: var(--font-body);
+            font-size: 14.5px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-accent), #818cf8);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--color-surface-2);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.12);
+            transform: translateY(-2px);
+        }
+
+        .btn svg {
+            width: 18px; height: 18px;
+            fill: currentColor;
+        }
+
+        /* ── Sections ── */
+        .section {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        .section-divider {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .section-divider hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--color-accent);
+            margin-bottom: 16px;
+        }
+
+        .section h2 {
+            font-family: var(--font-display);
+            font-size: clamp(28px, 3.5vw, 42px);
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 28px;
+            letter-spacing: -0.01em;
+        }
+
+        /* ── Highlights Strip ── */
+        .highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 48px;
+            max-width: var(--max-width);
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 24px;
+        }
+
+        .highlight-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--color-accent), var(--color-accent-2));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .highlight-card:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .highlight-card:hover::before { opacity: 1; }
+
+        .highlight-card .number {
+            font-family: var(--font-display);
+            font-size: 36px;
+            background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+
+        .highlight-card .label {
+            font-size: 13px;
+            color: var(--color-text-dim);
+            letter-spacing: 0.02em;
+        }
+
+        /* ── TLDR Box ── */
+        .tldr-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(34, 211, 238, 0.04));
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: var(--radius);
+            padding: 32px 36px;
+            margin: 32px 0;
+            position: relative;
+        }
+
+        .tldr-box::before {
+            content: 'TL;DR';
+            position: absolute;
+            top: -11px;
+            left: 28px;
+            background: var(--color-bg);
+            padding: 0 12px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            color: var(--color-accent);
+        }
+
+        .tldr-box p {
+            font-size: 16.5px;
+            line-height: 1.75;
+            color: var(--color-text);
+        }
+
+        /* ── Abstract ── */
+        .abstract-text {
+            font-size: 16.5px;
+            line-height: 1.8;
+            color: rgba(232, 230, 227, 0.85);
+            text-align: justify;
+        }
+
+        /* ── Figure Container ── */
+        .figure-container {
+            margin: 48px 0;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+        }
+
+        .figure-container img {
+            width: 100%;
+            display: block;
+        }
+
+        .figure-container.padded img {
+            padding: 24px;
+        }
+
+        .figure-caption {
+            padding: 16px 24px;
+            font-size: 14px;
+            color: var(--color-text-dim);
+            border-top: 1px solid var(--color-border);
+            line-height: 1.6;
+        }
+
+        .figure-caption strong {
+            color: var(--color-accent);
+            font-family: var(--font-mono);
+            font-size: 12.5px;
+        }
+
+        /* ── Contribution Cards ── */
+        .contrib-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 32px;
+        }
+
+        .contrib-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .contrib-card:hover {
+            border-color: rgba(99,102,241,0.2);
+            transform: translateY(-2px);
+        }
+
+        .contrib-card .icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+
+        .contrib-card h3 {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+
+        .contrib-card p {
+            font-size: 14.5px;
+            color: var(--color-text-dim);
+            line-height: 1.65;
+        }
+
+        .icon-1 { background: rgba(99,102,241,0.12); }
+        .icon-2 { background: rgba(34,211,238,0.12); }
+        .icon-3 { background: rgba(245,158,11,0.12); }
+        .icon-4 { background: rgba(16,185,129,0.12); }
+
+        /* ── Results Table ── */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 32px 0;
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14.5px;
+        }
+
+        thead {
+            background: var(--color-surface-2);
+        }
+
+        th {
+            padding: 14px 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.03em;
+            color: var(--color-text-dim);
+            border-bottom: 1px solid var(--color-border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 13px 18px;
+            border-bottom: 1px solid var(--color-border);
+            font-family: var(--font-mono);
+            font-size: 13.5px;
+        }
+
+        td:first-child {
+            font-family: var(--font-body);
+            font-weight: 500;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        tr.ours {
+            background: rgba(99,102,241,0.06);
+        }
+
+        tr.ours td {
+            color: var(--color-accent-2);
+            font-weight: 600;
+        }
+
+        tr.ours td:first-child {
+            color: var(--color-accent);
+        }
+
+        .improvement {
+            font-size: 11px;
+            color: var(--color-success);
+            vertical-align: super;
+            margin-left: 2px;
+        }
+
+        /* ── Code Block ── */
+        .code-block {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin: 32px 0;
+        }
+
+        .code-header {
+            padding: 12px 20px;
+            background: var(--color-surface-2);
+            border-bottom: 1px solid var(--color-border);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--color-text-dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .code-header .dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .code-header .dots span {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+        }
+
+        .code-header .dots span:nth-child(1) { background: #f43f5e; }
+        .code-header .dots span:nth-child(2) { background: #f59e0b; }
+        .code-header .dots span:nth-child(3) { background: #10b981; }
+
+        .code-block pre {
+            padding: 20px 24px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            color: #c4c4cc;
+        }
+
+        .code-block .keyword { color: #c678dd; }
+        .code-block .func { color: #61afef; }
+        .code-block .string { color: #98c379; }
+        .code-block .comment { color: #5c6370; font-style: italic; }
+        .code-block .number { color: #d19a66; }
+        .code-block .param { color: #e5c07b; }
+
+        /* ── Evolution Section ── */
+        .evolution-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin: 32px 0;
+        }
+
+        .evo-step {
+            display: flex;
+            gap: 20px;
+            padding: 20px 24px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            align-items: flex-start;
+            transition: all 0.3s ease;
+        }
+
+        .evo-step:hover {
+            border-color: rgba(99,102,241,0.15);
+        }
+
+        .evo-step .step-num {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--color-accent);
+            background: rgba(99,102,241,0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+            margin-top: 2px;
+        }
+
+        .evo-step h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .evo-step p {
+            font-size: 14px;
+            color: var(--color-text-dim);
+            line-height: 1.6;
+        }
+
+        /* ── Comparison Grid ── */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 32px 0;
+        }
+
+        @media (max-width: 700px) {
+            .comparison-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── BibTeX ── */
+        .bibtex-block {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin: 24px 0;
+            position: relative;
+        }
+
+        .bibtex-block pre {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            color: #9ca3af;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 16px; right: 16px;
+            background: var(--color-surface-2);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--color-text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--color-text);
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 60px 24px 40px;
+            color: var(--color-text-dim);
+            font-size: 13px;
+        }
+
+        footer a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        /* ── Nav ── */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 12px 24px;
+            background: rgba(10,10,15,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            opacity: 0;
+            transform: translateY(-100%);
+            transition: all 0.3s ease;
+        }
+
+        .nav.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .nav a {
+            font-size: 13px;
+            color: var(--color-text-dim);
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover { color: var(--color-accent-2); }
+
+        /* ── Prose ── */
+        .prose p {
+            margin-bottom: 16px;
+            line-height: 1.8;
+            color: rgba(232,230,227,0.85);
+        }
+
+        .prose p:last-child { margin-bottom: 0; }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .highlights { grid-template-columns: repeat(2, 1fr); }
+            .contrib-grid { grid-template-columns: 1fr; }
+            .hero { padding: 120px 20px 60px; }
+            .section { padding: 48px 20px; }
+        }
+
+        /* ── Scroll Animation ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Method Pipeline ── */
+        .pipeline {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin: 40px 0;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .pipeline-step {
+            flex-shrink: 0;
+            text-align: center;
+            padding: 16px 20px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            min-width: 140px;
+        }
+
+        .pipeline-step .emoji {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .pipeline-step .name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .pipeline-step .desc {
+            font-size: 11px;
+            color: var(--color-text-dim);
+        }
+
+        .pipeline-arrow {
+            flex-shrink: 0;
+            color: var(--color-accent);
+            font-size: 20px;
+            padding: 0 6px;
+        }
+
+        /* ── Performance Bar ── */
+        .perf-bars {
+            margin: 32px 0;
+        }
+
+        .perf-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .perf-bar-label {
+            font-size: 13px;
+            font-weight: 500;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .perf-bar-track {
+            flex: 1;
+            height: 28px;
+            background: var(--color-surface);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--color-border);
+        }
+
+        .perf-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .perf-bar-fill.ours {
+            background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+        }
+
+        .perf-bar-fill.baseline {
+            background: rgba(255,255,255,0.12);
+            color: var(--color-text-dim);
+        }
+    </style>
 </head>
-
 <body>
-  <table style="width:100%;max-width:800px;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
-    <tr style="padding:0px">
-      <td style="padding:0px">
-        <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
-          <tr style="padding:0px">
-            <td style="padding:2.5%;width:63%;vertical-align:middle">
-              <p style="text-align:center">
-                <name>Dor Verbin</name>
-              </p>
-                <p>I'm a research scientist at <a href="https://deepmind.google/">Google DeepMind</a> in San Francisco. Before that I got my Ph.D. in computer science from the Harvard School of Engineering and Applied Sciences, where I was advised by <a href="https://www.eecs.harvard.edu/~zickler">Todd Zickler</a>.
-              <p>
-                  Previously, I received a double B.Sc. in physics and in electrical engineering from Tel Aviv University, after which I spent a couple of years as a researcher at Camerai (<a href="https://techcrunch.com/2020/08/20/report-apple-quietly-acquired-israels-camerai-formerly-tipit-a-specialist-in-ar-and-camera-tech/?guccounter=1&guce_referrer=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS8&guce_referrer_sig=AQAAAEQ5bvbkxuCEk6x6uaeBWTaK-GmbMx7IB3uQVR8zascIy4NcT9gMavOOmWfwkqRsgP3Q8oUswEi_RaE9NPcSYPGAHn6aT9MLUQeZ3HwPYWIi9XMYQBQr1M2pwQH5f8nSthOPZ3HYGrdNEvZrJrLJRcOg8SoO1wmK5XYOLF1Lmk0Y">acquired</a> by Apple), working on real-time computer vision algorithms for mobile devices.
-              </p>
-              <p style="text-align:center">
-                <a href="mailto:dorverbin@gmail.com">Email</a> &nbsp/&nbsp
-                <!--<a href="data/CV.pdf">CV</a> &nbsp/&nbsp -->
-                <!--<a href="data/bio.txt">Bio</a> &nbsp/&nbsp -->
-                <a href="https://scholar.google.com/citations?user=r2CioPsAAAAJ">Google Scholar</a> &nbsp/&nbsp
-                <a href="https://twitter.com/dorverbin">Twitter</a> &nbsp/&nbsp
-                <a href="https://github.com/dorverbin/">Github</a>
-              </p>
-            </td>
-            <td style="padding:2.5%;width:40%;max-width:40%">
-              <a href="img/vd.jpg"><img style="width:100%;max-width:100%" alt="profile photo" src="img/vd.jpg" class="hoverZoomLink"></a>
-            </td>
-          </tr>
-        </tbody></table>
-        <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
-            <tr>
-            <td style="padding:20px;width:100%;vertical-align:middle">
-              <heading>Research</heading>
-              <p>
-                I am interested in computer vision and graphics. More specifically, I enjoy working on methods that use domain-specific knowledge of geometry, graphics, and physics, to improve computer vision systems.
-              </p>
-            </td>
-          </tr>
-        </tbody></table>
-        <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
 
-            
-            
-    <tr onmouseout="rogr_stop()" onmouseover="rogr_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='rogr_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/rogr_after.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/rogr_before.png' width="160">
+<!-- Navigation -->
+<nav class="nav" id="navbar">
+    <a href="#abstract">Abstract</a>
+    <a href="#method">Method</a>
+    <a href="#results">Results</a>
+    <a href="#evolution">Evolution</a>
+    <a href="#citation">Citation</a>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="venue-badge">
+            <span class="dot"></span>
+            KDD 2026 · Jeju, Korea
         </div>
-        <script type="text/javascript">
-          function rogr_start() {
-            document.getElementById('rogr_image').style.opacity = "1";
-          }
 
-          function rogr_stop() {
-            document.getElementById('rogr_image').style.opacity = "0";
-          }
-          rogr_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="">
-            <papertitle>ROGR: Relightable 3D Objects using Generative Relighting</papertitle>
-        </a>
-        <br>
-        <a href="https://tangjiapeng.github.io/">Jiapeng Tang*</a>, 
-        <a href="https://www.linkedin.com/in/matthew-levine-21799667/">Matthew J. Levine*</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="http://stephangarbin.com/">Stephan J. Garbin</a>,
-        <a href="https://www.niessnerlab.org/">Matthias Nießner</a>,
-        <a href="http://ricardomartinbrualla.com/">Ricardo Martin Brualla</a>, 
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,           
-        <a href="https://henzler.github.io/">Philipp Henzler</a>
-        <br>
-          
-        <em>NeurIPS</em>, 2025 &nbsp <font color="red"><strong>(Spotlight)</strong></font>
-        <br>
-        <a href="https://tangjiapeng.github.io/ROGR/">project page</a>
-        /
-        <a href="https://arxiv.org/abs/2510.03163">arXiv</a>
-        <p></p>
-        <p></p>
-        <p>
-                We use a multi-view relighting model to build a lighting-conditioned NeRF that generalizes to unseen lighting and doesn't require per-lighting optimization
+        <h1>
+            Large Language Model as an <br>
+            <span class="highlight">Excellent RL Researcher</span><br>
+            <em>in Single &amp; Multi-Agent Scenarios</em>
+        </h1>
+
+        <p class="subtitle">
+            SE-RL: A self-evolutional framework that uses LLMs to continuously design, evaluate, and improve reinforcement learning algorithms for optimal trade execution in dynamic financial markets.
         </p>
-      </td>
-    </tr>
-            
-            
-    <tr onmouseout="ever_stop()" onmouseover="ever_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='ever_image'>
-          <img src='img/ever_after.png' width=100%>
+
+        <div class="author-list">
+            <span class="author">Anonymous Authors</span>
         </div>
-          <img src='img/ever_before.png' width=100%>
+
+        <div class="affiliations">
+            Under Review · KDD 2026
         </div>
-        <script type="text/javascript">
-          function ever_start() {
-            document.getElementById('ever_image').style.opacity = "1";
-          }
 
-          function ever_stop() {
-            document.getElementById('ever_image').style.opacity = "0";
-          }
-          ever_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://half-potato.gitlab.io/posts/ever/">
-            <papertitle>EVER: Exact Volumetric Ellipsoid Rendering for Real-time View Synthesis</papertitle>
-        </a>
-        <br>
-        <a href="https://half-potato.gitlab.io/">Alexander Mai</a>, 
-        <a href="https://phogzone.com/">Peter Hedman</a>,
-        <a href="https://grgkopanas.github.io/">George Kopanas</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://scholar.google.com/citations?user=ozNFrecAAAAJ&hl=en">David Futschik</a>,
-        <a href="https://xharlie.github.io/">Qiangeng Xu</a>,
-        <a href="https://jacobsschool.ucsd.edu/faculty/profile?id=253">Falko Kuester</a>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://www.zhangyinda.com/">Yinda Zhang</a>
-				<br>
-        <em>ICCV</em>, 2025 &nbsp <font color="red"><strong>(Oral Presentation)</strong></font>
-        <br>
-        <a href="https://half-potato.gitlab.io/posts/ever/">project page</a>
-        /
-        <a href="https://github.com/half-potato/ever_training">code</a>
-        /
-        <a href="https://arxiv.org/abs/2410.01804">arXiv</a>
-        <p></p>
-        <p>
-				We raytrace constant-density ellipsoids, which results in a more accurate and flexible model compared with Gaussian splatting, while still running in real-time.
-        </p>
-      </td>
-    </tr>
-            
-            
-
-            
-    <tr onmouseout="r2r_stop()" onmouseover="r2r_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='r2r_image'><video  width=100% muted autoplay loop>
-          <source src="img/r2r.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/r2r.jpg' width=100%>
+        <div class="hero-buttons">
+            <a href="#" class="btn btn-primary">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                Paper (PDF)
+            </a>
+            <a href="https://github.com/KDD2026-anonymous-1640/KDD2026-anonymous-1640" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                Code
+            </a>
+            <a href="#" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                Dataset
+            </a>
         </div>
-        <script type="text/javascript">
-          function r2r_start() {
-            document.getElementById('r2r_image').style.opacity = "1";
-          }
-
-          function r2r_stop() {
-            document.getElementById('r2r_image').style.opacity = "0";
-          }
-          r2r_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://relight-to-reconstruct.github.io/">
-          <papertitle>Generative Multiview Relighting for
-              3D Reconstruction under Extreme Illumination Variation</papertitle>
-        </a>
-        <br>
-        <a href="https://hadizayer.github.io/">Hadi Alzayer</a>,
-        <a href="https://henzler.github.io/">Philipp Henzler</a>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://jbhuang0604.github.io/">Jia-Bin Huang</a>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>, 
-        <strong>Dor Verbin</strong>
-        <br>
-        <em>CVPR</em>, 2025 &nbsp <font color="red"><strong>(Highlight)</strong></font>
-        <br>
-        <a href="https://relight-to-reconstruct.github.io/">project page</a>
-        /
-        <a href="https://arxiv.org/abs/2412.15211">arXiv</a>
-        <p></p>
-        <p>
-				We train a generative model to turn images taken under extremely different illumination into a consistently-lit set of images, which can then be 3D reconstructed.
-        </p>
-      </td>
-    </tr>
-            
-            
-            
-    <tr onmouseout="simvs_stop()" onmouseover="simvs_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='simvs_image'><video  width=100% muted autoplay loop>
-          <source src="img/simvs.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/simvs.jpg' width=100%>
-        </div>
-        <script type="text/javascript">
-          function simvs_start() {
-            document.getElementById('simvs_image').style.opacity = "1";
-          }
-
-          function simvs_stop() {
-            document.getElementById('simvs_image').style.opacity = "0";
-          }
-          simvs_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://alextrevithick.github.io/simvs">
-          <papertitle>SimVS: Simulating World Inconsistencies for Robust View Synthesis</papertitle>
-        </a>
-        <br>
-        <a href="https://alextrevithick.github.io/">Alex Trevithick</a>,
-        <a href="https://scholar.google.com/citations?user=-KSDNZQAAAAJ&hl=en">Roni Paiss</a>,
-        <a href="https://henzler.github.io/">Philipp Henzler</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://www.cs.columbia.edu/~rundi/">Rundi Wu</a>,
-        <a href="https://hadizayer.github.io/">Hadi Alzayer</a>,
-        <a href="https://ruiqigao.github.io/">Ruiqi Gao</a>,
-        <a  href="https://poolio.github.io/">Ben Poole</a>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://holynski.org/">Aleksander Holynski</a>,
-        <a href="https://cseweb.ucsd.edu/~ravir/">Ravi Ramamoorthi</a>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>
-        <br>
-        <em>CVPR</em>, 2025
-        <br>
-        <a href="https://alextrevithick.github.io/simvs/">project page</a>
-        /
-        <a href="https://arxiv.org/abs/2412.07696">arXiv</a>
-        <p></p>
-        <p>
-        We use a video model to simulate inconsistencies during capture in order to learn how to get consistent 3D reconstructions from inconsistent captures.
-        </p>
-      </td>
-    </tr>
-                        
-            
-    <tr onmouseout="nerfcasting_stop()" onmouseover="nerfcasting_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='nerfcasting_image'><video  width=100% muted autoplay loop>
-          <source src="img/nerfcasting.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/nerfcasting.jpg' width=100%>
-        </div>
-        <script type="text/javascript">
-          function nerfcasting_start() {
-            document.getElementById('nerfcasting_image').style.opacity = "1";
-          }
-
-          function nerfcasting_stop() {
-            document.getElementById('nerfcasting_image').style.opacity = "0";
-          }
-          nerfcasting_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://dorverbin.github.io/nerf-casting">
-          <papertitle>NeRF-Casting: Improved View-Dependent Appearance with Consistent Reflections</papertitle>
-        </a>
-        <br>
-				
-        <strong>Dor Verbin</strong>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-        <a href="https://phogzone.com/">Peter Hedman</a>,
-        <a href="https://benattal.github.io/">Benjamin Attal</a>,
-        <a href="https://bmild.github.io/">Ben Mildenhall</a>,
-        <a href="https://szeliski.org/RichardSzeliski.htm">Richard Szeliski</a>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>
-        <br>
-        <em>SIGGRAPH Asia</em>, 2024
-        <br>
-        <a href="https://dorverbin.github.io/nerf-casting">project page</a>
-        /
-        <a href="https://arxiv.org/abs/2405.14871">arXiv</a>
-        <p></p>
-        <p>
-        Casting reflection cones inside NeRF lets us synthesize photorealistic specularities in real-world scenes.
-        </p>
-      </td>
-    </tr>
-            
-    <tr onmouseout="illum_stop()" onmouseover="illum_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='illum_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/illum.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/illum.jpg' width="160">
-        </div>
-        <script type="text/javascript">
-          function illum_start() {
-            document.getElementById('illum_image').style.opacity = "1";
-          }
-
-          function illum_stop() {
-            document.getElementById('illum_image').style.opacity = "0";
-          }
-          illum_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://illuminerf.github.io/">
-			<papertitle>IllumiNeRF: 3D Relighting without Inverse Rendering</papertitle>
-        </a>
-        <br>
-        <a href="https://xiaoming-zhao.com/">Xiaoming Zhao</a>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://keunhong.com/">Keunhong Park</a>,
-        <a href="http://ricardomartinbrualla.com/">Ricardo Martin Brualla</a>, 
-        <a href="https://henzler.github.io/">Philipp Henzler</a>
-        <br>
-        <em>NeurIPS</em>, 2024
-        <br>
-        <a href="https://illuminerf.github.io">project page</a>
-        /
-        <a href="https://arxiv.org/abs/2406.06527">arXiv</a>
-        <p></p>
-        <p>
-				We do 3D relighting by sampling from a single-image relighting diffusion model, and distilling it into a latent-variable NeRF.
-        </p>
-      </td>
-    </tr>
-
-            
-    <tr onmouseout="flash_cache_stop()" onmouseover="flash_cache_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='flash_cache_image'><video  width=100% muted autoplay loop>
-          <source src="img/flash_cache.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/flash_cache.jpg' width=100%>
-        </div>
-        <script type="text/javascript">
-          function flash_cache_start() {
-            document.getElementById('flash_cache_image').style.opacity = "1";
-          }
-
-          function flash_cache_stop() {
-            document.getElementById('flash_cache_image').style.opacity = "0";
-          }
-          flash_cache_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://benattal.github.io/flash-cache/">
-          <papertitle>Flash Cache: Reducing Bias in Radiance Cache Based Inverse Rendering</papertitle>
-        </a>
-        <br>
-        <a href="https://benattal.github.io/">Benjamin Attal</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://bmild.github.io/">Ben Mildenhall</a>,
-        <a href="https://phogzone.com/">Peter Hedman</a>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://www.cs.cmu.edu/~motoole2/">Matthew O'Toole</a>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>
-        <br>
-        <em>ECCV</em>, 2024 &nbsp <font color="red"><strong>(Oral Presentation)</strong></font>
-        <br>
-        <a href="https://benattal.github.io/flash-cache/">project page</a>
-        /
-        <a href="https://arxiv.org/abs/2409.05867">arXiv</a>
-        <p></p>
-        <p>
-          Using radiance caches, importance sampling, and control variates helps reduce bias in inverse rendering, resulting in better estimates of geometry, materials, and lighting.
-        </p>
-      </td>
-    </tr>
-
-                        
-            
-    <tr onmouseout="eclipse_stop()" onmouseover="eclipse_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='eclipse_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/eclipse_after.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/eclipse_before.jpg' width="160">
-        </div>
-        <script type="text/javascript">
-          function eclipse_start() {
-            document.getElementById('eclipse_image').style.opacity = "1";
-          }
-
-          function eclipse_stop() {
-            document.getElementById('eclipse_image').style.opacity = "0";
-          }
-          eclipse_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://dorverbin.github.io/eclipse">
-          <papertitle>Eclipse: Disambiguating Illumination and Materials using Unintended Shadows</papertitle>
-        </a>
-        <br>
-        <strong>Dor Verbin</strong>,
-        <a href="https://bmild.github.io/">Ben Mildenhall</a>,
-        <a href="https://phogzone.com/">Peter Hedman</a>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://www.eecs.harvard.edu/~zickler/">Todd Zickler</a>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>
-        <br>
-        <em>CVPR</em>, 2024 &nbsp <font color="red"><strong>(Oral Presentation)</strong></font>
-        <br>
-        <a href="https://dorverbin.github.io/eclipse">project page</a>
-        /
-        <a href="https://www.youtube.com/watch?v=amQLGyza3EU">video</a>
-        /
-        <a href="https://arxiv.org/abs/2305.16321">arXiv</a>
-        <p></p>
-        <p>
-        Shadows cast by unobserved occluders provide a cue for recovering materials and high-frequency illumination from images of diffuse objects.
-        </p>
-      </td>
-    </tr>
-
-            
-
-            
-    <tr onmouseout="recon_stop()" onmouseover="recon_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='recon_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/recon.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/recon.png' width="160">
-        </div>
-        <script type="text/javascript">
-          function recon_start() {
-            document.getElementById('recon_image').style.opacity = "1";
-          }
-
-          function recon_stop() {
-            document.getElementById('recon_image').style.opacity = "0";
-          }
-          recon_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://reconfusion.github.io/">
-          <papertitle>ReconFusion: 3D Reconstruction with Diffusion Priors</papertitle>
-        </a>
-        <br>
-        <a href="https://www.cs.columbia.edu/~rundi/">Rundi Wu*</a>,
-        <a href="https://bmild.github.io/">Ben Mildenhall*</a>,
-        <a href="https://henzler.github.io/">Philipp Henzler</a>,
-        <a href="https://keunhong.com/">Keunhong Park</a>,
-        <a href="https://ruiqigao.github.io/">Ruiqi Gao</a>,
-        <a href="https://scholar.google.com/citations?user=_pKKv2QAAAAJ&hl=en/">Daniel Watson</a>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://poolio.github.io/">Ben Poole</a>,
-        <a href="https://holynski.org/">Aleksander Holynski*</a>
-        <br>
-        <em>CVPR</em>, 2024
-        <br>
-        <a href="https://reconfusion.github.io/">project page</a>
-        /
-        <a href="https://arxiv.org/abs/2312.02981">arXiv</a>
-        <p></p>
-        <p>
-        We finetune an image diffusion model to accept multiview inputs, then use it to regularize radiance field reconstruction.
-        </p>
-      </td>
-    </tr>
-
-            
-    <tr onmouseout="genten_stop()" onmouseover="genten_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='genten_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/genten.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/genten.jpg' width="160">
-        </div>
-        <script type="text/javascript">
-          function genten_start() {
-            document.getElementById('genten_image').style.opacity = "1";
-          }
-
-          function genten_stop() {
-            document.getElementById('genten_image').style.opacity = "0";
-          }
-          genten_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://powers-of-10.github.io/">
-          <papertitle>Generative Powers of Ten</papertitle>
-        </a>
-        <br>
-        <a href="https://scholar.google.ch/citations?user=v3NXpJAAAAAJ&hl=en">Xiaojuan Wang</a>,
-        <a href="https://www.linkedin.com/in/jannekontkanen/">Janne Kontkanen</a>,
-        <a href="https://homes.cs.washington.edu/~curless/">Brian Curless</a>,
-        <a href="https://www.smseitz.com/">Steve Seitz</a>,
-        <a href="https://www.irakemelmacher.com/">Ira Kemelmacher</a>,
-        <a href="https://bmild.github.io/">Ben Mildenhall</a>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://holynski.org/">Aleksander Holynski</a>
-        <br>
-        <em>CVPR</em>, 2024 &nbsp <font color="red"><strong>(Highlight)</strong></font>
-        <br>
-        <a href="https://powers-of-10.github.io/">project page</a>
-        /
-        <a href="https://arxiv.org/abs/2312.02149">arXiv</a>
-        <p></p>
-        <p>
-        We use a generative text-to-image model for creating videos with extreme zoom ins.
-        </p>
-      </td>
-    </tr>
-
-    <tr onmouseout="bog_stop()" onmouseover="bog_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='bog_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/bog.jpg" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/bog.jpg' width="160">
-        </div>
-        <script type="text/javascript">
-          function bog_start() {
-            document.getElementById('bog_image').style.opacity = "1";
-          }
-
-          function bog_stop() {
-            document.getElementById('bog_image').style.opacity = "0";
-          }
-          bog_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://creiser.github.io/binary_opacity_grid/">
-          <papertitle>Binary Opacity Grids: Capturing Fine Geometric Detail for Mesh-Based View Synthesis</papertitle>
-        </a>
-        <br>
-				<a href="https://creiser.github.io/">Christian Reiser</a>,
-				<a href="http://stephangarbin.com/">Stephan J. Garbin</a>,
-				<a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-				<strong>Dor Verbin</strong>,
-				<a href="https://szeliski.org/RichardSzeliski.htm">Richard Szeliski</a>,
-				<a href="https://bmild.github.io/">Ben Mildenhall</a>,
-				<a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-				<a href="https://phogzone.com/">Peter Hedman</a>*,
-				<a href="https://www.cvlibs.net/">Andreas Geiger</a>*		
-        <br>
-        <em>SIGGRAPH</em>, 2024
-        <br>
-        <a href="https://creiser.github.io/binary_opacity_grid/">project page</a>
-        /
-        <a href="https://www.youtube.com/watch?v=2TPUmGRg8bM">video</a>
-        /
-        <a href="https://arxiv.org/abs/2402.12377">arXiv</a>
-        <p></p>
-        <p>
-        Applying anti-aliasing to a discrete opacity grid lets you render a hard representation into a soft image, and this enables highly-detailed mesh recovery.
-        </p>
-      </td>
-    </tr>
-            
-            
-    <tr onmouseout="boundatt_stop()" onmouseover="boundatt_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='boundatt_image'><video  width=100% muted autoplay loop>
-          <source src="img/boundatt.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/boundatt.png' width=100%>
-        </div>
-        <script type="text/javascript">
-          function boundatt_start() {
-            document.getElementById('boundatt_image').style.opacity = "1";
-          }
-
-          function boundatt_stop() {
-            document.getElementById('boundatt_image').style.opacity = "0";
-          }
-          boundatt_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://boundaryattention.github.io/">
-          <papertitle>Boundary Attention: Learning Curves, Corners, Junctions and Grouping
-</papertitle>
-        </a>
-        <br>
-        <a href="">Mia G. Polansky</a>,
-        <a href="">Charles Herrmann</a>,
-        <a href="https://hurjunhwa.github.io/">Junhwa Hur</a>,
-        <a href="https://deqings.github.io/">Deqing Sun</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://www.eecs.harvard.edu/~zickler/">Todd Zickler</a>,
-        <br>
-        <em>CoRR</em>, 2024
-        <br>
-        <a href="https://boundaryattention.github.io/">project page</a>
-        /
-        <a href="https://arxiv.org/abs/2401.00935">arXiv</a>
-        <p></p>
-        <p>
-        We design a new boundary-aware attention mechanism to quickly find boundaries at images with low SNRs. The output is similar to the <a href="#foj">field of junctions</a>, but this works ~100x faster!
-        </p>
-      </td>
-    </tr>
-
-            
-            
-    <tr onmouseout="nuvo_stop()" onmouseover="nuvo_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='nuvo_image'><video  width=100% muted autoplay loop>
-          <source src="img/nuvo.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/nuvo.jpg' width=100%>
-        </div>
-        <script type="text/javascript">
-          function nuvo_start() {
-            document.getElementById('nuvo_image').style.opacity = "1";
-          }
-
-          function nuvo_stop() {
-            document.getElementById('nuvo_image').style.opacity = "0";
-          }
-          nuvo_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://pratulsrinivasan.github.io/nuvo/">
-          <papertitle>Nuvo: Neural UV Mapping for Unruly 3D Representations</papertitle>
-        </a>
-        <br>
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-        <a href="http://stephangarbin.com/">Stephan J. Garbin</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://bmild.github.io/">Ben Mildenhall</a>
-        <br>
-        <em>ECCV</em>, 2024
-        <br>
-        <a href="https://pratulsrinivasan.github.io/nuvo/">project page</a>
-        /
-        <a href="https://www.youtube.com/watch?v=hmJiOSTDQZI">video</a>
-        /
-        <a href="http://arxiv.org/abs/2312.05283">arXiv</a>
-        <p></p>
-        <p>
-        We use neural fields to recover editable UV mappings for challenging geometry (e.g. volumetric representations like NeRF or DreamFusion, or meshes extracted from them).
-        </p>
-      </td>
-    </tr>
-
-            
-            
-            
-            
-            
-            
-
-                        
-            
-            
-            
-    <tr onmouseout="zipnerf_stop()" onmouseover="zipnerf_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='zipnerf_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/zipnerf.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/zipnerf.jpg' width="160">
-        </div>
-        <script type="text/javascript">
-          function zipnerf_start() {
-            document.getElementById('zipnerf_image').style.opacity = "1";
-          }
-
-          function zipnerf_stop() {
-            document.getElementById('zipnerf_image').style.opacity = "0";
-          }
-          zipnerf_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="http://jonbarron.info/zipnerf">
-          <papertitle>Zip-NeRF: Anti-Aliased Grid-Based Neural Radiance Fields</papertitle>
-        </a>
-        <br>
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://bmild.github.io/">Ben Mildenhall</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-        <a href="https://phogzone.com/">Peter Hedman</a>
-        <br>
-        <em>ICCV</em>, 2023 &nbsp <font color="red"><strong>(Oral Presentation, Best Paper Finalist)</strong></font>
-        <br>
-        <a href="http://jonbarron.info/zipnerf">project page</a>
-        /
-        <a href="https://www.youtube.com/watch?v=xrrhynRzC8k">video</a>
-        /
-        <a href="https://arxiv.org/abs/2304.06706">arXiv</a>
-        <p></p>
-        <p>
-        We combine mip-NeRF 360 and Instant NGP to reconstruct very large scenes.
-        </p>
-      </td>
-    </tr>
-    
-
-    <tr onmouseout="nmf_stop()" onmouseover="nmf_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='nmf_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/nmf.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/nmf.jpg' width="160">
-        </div>
-        <script type="text/javascript">
-          function nmf_start() {
-            document.getElementById('nmf_image').style.opacity = "1";
-          }
-
-          function nmf_stop() {
-            document.getElementById('nmf_image').style.opacity = "0";
-          }
-          nmf_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://half-potato.gitlab.io/posts/nmf/">
-          <papertitle>Neural Microfacet Fields for Inverse Rendering</papertitle>
-        </a>
-        <br>
-        <a href="https://half-potato.gitlab.io/">Alexander Mai</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://chei.ucsd.edu/team/fkuester/">Falko Kuester</a>,
-        <a href="https://people.eecs.berkeley.edu/~sfk/">Sara Fridovich-Keil</a>
-        <br>
-        <em>ICCV</em>, 2023
-        <br>
-        <a href="https://half-potato.gitlab.io/posts/nmf/">project page</a>
-        /
-        <a href="https://www.youtube.com/watch?v=dKJIGLrOSLk">video</a>
-        /
-        <a href="https://github.com/half-potato/nmf">code</a>
-        /
-        <a href="https://arxiv.org/abs/2303.17806">arXiv</a>
-        <p></p>
-        <p>
-        We treat each point in space as an infinitesimal volumetric surface element. Using MC-based rendering to fit this representation to a collection of images yields accurate geometry, materials, and illumination.
-        </p>
-      </td>
-    </tr>
-    <tr onmouseout="bakedsdf_stop()" onmouseover="bakedsdf_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='bakedsdf_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/bakedsdf_after.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/bakedsdf_before.jpg' width="160">
-        </div>
-        <script type="text/javascript">
-          function bakedsdf_start() {
-            document.getElementById('bakedsdf_image').style.opacity = "1";
-          }
-
-          function bakedsdf_stop() {
-            document.getElementById('bakedsdf_image').style.opacity = "0";
-          }
-          bakedsdf_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://bakedsdf.github.io/">
-          <papertitle>BakedSDF: Meshing Neural SDFs for Real-Time View Synthesis</papertitle>
-        </a>
-        <br>
-        <a href="https://lioryariv.github.io/">Lior Yariv*</a>,
-        <a href="https://phogzone.com/">Peter Hedman*</a>,
-        <a href="https://creiser.github.io/">Christian Reiser</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-        <a href="https://szeliski.org/RichardSzeliski.htm">Richard Szeliski</a>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://bmild.github.io/">Ben Mildenhall</a>
-        <br>
-        <em>SIGGRAPH</em>, 2023
-        <br>
-        <a href="https://bakedsdf.github.io/">project page</a>
-        /
-        <a href="https://www.youtube.com/watch?v=fThKXZ6uDTk">video</a>
-        /
-        <a href="https://arxiv.org/abs/2302.14859">arXiv</a>
-        <p></p>
-        <p>
-        We achieve real-time view synthesis by baking a high quality mesh and fine-tuning a lightweight appearance model on top.
-        </p>
-      </td>
-    </tr>
-
-            
-    <tr onmouseout="merf_stop()" onmouseover="merf_start()">
-      <td style="padding:20px;width:25%;vertical-align:middle">
-        <div class="one">
-          <div class="two" id='merf_image'><video  width=100% height=100% muted autoplay loop>
-          <source src="img/merf_after.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-          </video></div>
-          <img src='img/merf_before.jpg' width="160">
-        </div>
-        <script type="text/javascript">
-          function merf_start() {
-            document.getElementById('merf_image').style.opacity = "1";
-          }
-
-          function merf_stop() {
-            document.getElementById('merf_image').style.opacity = "0";
-          }
-          merf_stop()
-        </script>
-      </td>
-      <td style="padding:20px;width:75%;vertical-align:middle">
-        <a href="https://merf42.github.io/">
-          <papertitle>MERF: Memory-Efficient Radiance Fields for Real-time View Synthesis in Unbounded Scenes</papertitle>
-        </a>
-        <br>
-        <a href="https://creiser.github.io/">Christian Reiser</a>,
-        <a href="https://szeliski.org/RichardSzeliski.htm">Richard Szeliski</a>,
-        <strong>Dor Verbin</strong>,
-        <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-        <a href="https://bmild.github.io/">Ben Mildenhall</a>,
-        <a href="https://www.cvlibs.net/">Andreas Geiger</a>,
-        <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-        <a href="https://phogzone.com/">Peter Hedman</a>
-        <br>
-        <em>SIGGRAPH</em>, 2023
-        <br>
-        <a href="https://merf42.github.io/">project page</a>
-        /
-        <a href="https://www.youtube.com/watch?v=3EACM2JAcxc">video</a>
-        /
-        <a href="https://arxiv.org/abs/2302.12249">arXiv</a>
-        <p></p>
-        <p>
-        We achieve real-time view synthesis using a volumetric rendering model with a compact representation combining a low resolution 3D feature grid and high resolution 2D feature planes.
-        </p>
-      </td>
-    </tr>
+    </div>
+</section>
 
 
-            
 
+<!-- Abstract -->
+<section class="section reveal" id="abstract">
+    <div class="section-label">Abstract</div>
+    <h2>Automated RL Research via LLMs</h2>
 
-        <tr onmouseout="refnerf_stop()" onmouseover="refnerf_start()">
-          <td style="padding:20px;width:25%;vertical-align:middle">
-            <div class="one">
-              <div class="two" id='refnerf_image'><video  width=100% height=100% muted autoplay loop>
-              <source src="img/refnerf.mp4" type="video/mp4">
-              Your browser does not support the video tag.
-              </video></div>
-              <img src='img/refnerf.jpg' width="160">
+    <div class="tldr-box">
+        <p>We propose <strong>SE-RL</strong>, a framework that uses LLMs to automatically design, evaluate, and iteratively improve complete RL algorithms—including reward functions, agent architectures, and communication protocols—for optimal trade execution. Combined with a dynamic multi-agent market simulator and a hybrid training strategy, SE-RL outperforms all baselines on 200 stocks across CSI100 and NASDAQ100.</p>
+    </div>
+
+    <div class="prose abstract-text">
+        <p>In quantitative finance, reinforcement learning (RL) has shown great promise for order execution due to its ability to interact with market environments based on real data. However, traditional RL methods suffer from slow research speed and rely on static market assumptions that do not consider the impact of an agent's execution actions on the environment.</p>
+        <p>To address these challenges, we propose a <strong>Self-Evolutional single-agent/multi-agent Reinforcement Learning (SE-RL)</strong> framework. The framework utilizes a Large Language Model (LLM) to design various RL algorithm modules—including agent model design, reward function, profiling, communication, and state imagination—by leveraging the LLM to generate module outputs or executable code.</p>
+        <p>SE-RL continuously improves the accuracy of LLM-generated RL algorithms through a <strong>Dual-Level Enhancement Kit (DEK)</strong> at both high-level (prompt refinement) and low-level (parameter fine-tuning). Additionally, we develop a <strong>dynamic financial market simulator</strong> based on a multi-agent system and introduce a <strong>hybrid environment training method</strong> that rebalances each environment's loss weight. Comprehensive experiments on 200 realistic stock datasets demonstrate that our proposed framework outperforms current state-of-the-art baselines.</p>
+    </div>
+</section>
+
+<div class="section-divider"><hr></div>
+
+<!-- Motivation -->
+<section class="section reveal" id="motivation">
+    <div class="section-label">Motivation</div>
+    <h2>Why We Need SE-RL</h2>
+
+    <div class="prose">
+        <p>Two fundamental challenges hinder further progress in RL-based order execution: (1) RL algorithms are evolving at a markedly slower pace compared to other deep learning areas, and (2) existing methods rely on unrealistic static market assumptions that ignore market impact.</p>
+    </div>
+
+    <div class="comparison-grid">
+        <div class="figure-container">
+            <img src="img/intro_fig1.png" alt="RL growth trajectory analysis">
+            <div class="figure-caption">
+                <strong>Figure 1a</strong> — RL shows the lowest growth trajectory among AI subfields across GitHub repositories, academic papers, and arXiv submissions over the past three years.
             </div>
-            <script type="text/javascript">
-              function refnerf_start() {
-                document.getElementById('refnerf_image').style.opacity = "1";
-              }
+        </div>
+        <div class="figure-container">
+            <img src="img/intro_fig2.png" alt="Market impact analysis">
+            <div class="figure-caption">
+                <strong>Figure 1b</strong> — Even medium-sized orders induce measurable market impacts across all market capitalization levels, fundamentally altering trading environments.
+            </div>
+        </div>
+    </div>
+</section>
 
-              function refnerf_stop() {
-                document.getElementById('refnerf_image').style.opacity = "0";
-              }
-              refnerf_stop()
-            </script>
-          </td>
-                <td style="padding:20px;width:75%;vertical-align:middle">
-              <a href="https://dorverbin.github.io/refnerf/index.html">
-                <papertitle>Ref-NeRF: Structured View-Dependent Appearance for Neural Radiance Fields</papertitle>
-              </a>
-              <br>
-              <strong>Dor Verbin</strong>,
-              <a href="https://phogzone.com/">Peter Hedman</a>,
-              <a href="https://bmild.github.io/">Ben Mildenhall</a>, 
-              <a href="https://www.eecs.harvard.edu/~zickler">Todd Zickler</a>,
-              <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-              <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>
-              <br>
-        <em>CVPR</em>, 2022 &nbsp <font color="red"><strong>(Oral Presentation, Best Student Paper Honorable Mention)</strong></font>
-              <br>
-              <a href="https://dorverbin.github.io/refnerf/index.html">project page</a>
-        /
-              <a href="https://arxiv.org/abs/2112.03907">arXiv</a>
-                    /
-                    <a href="https://github.com/google-research/multinerf">code</a>
-        /
-              <a href="https://youtu.be/qrdRH9irAlk">video</a>
-              <p></p>
-              <p>We modify NeRF's representation of view-dependent appearance to improve its representation of specular appearance, and recover accurate surface normals. Our method also enables view-consistent scene editing.</p>
-            </td>
-          </tr>
-						
-          <tr onmouseout="mip360_stop()" onmouseover="mip360_start()">
-            <td style="padding:20px;width:25%;vertical-align:middle">
-              <div class="one">
-                <div class="two" id='mip360_image'><video  width=100% height=100% muted autoplay loop>
-                <source src="img/kitchenlego_square320_crf23.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-                </video></div>
-                <img src='img/kitchenlego_square320.jpeg' width="160">
-              </div>
-              <script type="text/javascript">
-                function mip360_start() {
-                  document.getElementById('mip360_image').style.opacity = "1";
-                }
+<div class="section-divider"><hr></div>
 
-                function mip360_stop() {
-                  document.getElementById('mip360_image').style.opacity = "0";
-                }
-                mip360_stop()
-              </script>
-            </td>
-            <td style="padding:20px;width:75%;vertical-align:middle">
-              <a href="http://jonbarron.info/mipnerf360">
-                <papertitle>Mip-NeRF 360: Unbounded Anti-Aliased Neural Radiance Fields</papertitle>
-              </a>
-              <br>
-              <a href="https://jonbarron.info/">Jonathan T. Barron</a>,
-              <a href="https://bmild.github.io/">Ben Mildenhall</a>,
-              <strong>Dor Verbin</strong>,
-              <a href="https://pratulsrinivasan.github.io/">Pratul Srinivasan</a>,
-              <a href="https://phogzone.com/">Peter Hedman</a>
-              <br>
-							<em>CVPR</em>, 2022 &nbsp <font color="red"><strong>(Oral Presentation)</strong></font>
-              <br>
-              <a href="http://jonbarron.info/mipnerf360">project page</a>
-              /
-              <a href="https://arxiv.org/abs/2111.12077">arXiv</a>
-              /
-                <a href="https://github.com/google-research/multinerf">code</a>
-                /
-              <a href="https://youtu.be/zBSH-k9GbV4">video</a>
-              <p></p>
-              <p>We extend mip-NeRF to produce realistic results on unbounded scenes.</p>
-            </td>
-          </tr>
-		
-        
-            
-            				
-          <tr onmouseout="foj_stop()" onmouseover="foj_start()">
-            <td style="padding:20px;width:25%;vertical-align:middle">
-              <div class="one" id="foj">
-                <div class="two" id='foj_image'><video  width=100% height=100% muted autoplay loop>
-                <source src="img/foj.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-                </video></div>
-                <img src='img/foj.png' width="160">
-              </div>
-              <script type="text/javascript">
-                function foj_start() {
-                  document.getElementById('foj_image').style.opacity = "1";
-                }
+<!-- Method -->
+<section class="section reveal" id="method">
+    <div class="section-label">Method</div>
+    <h2>The SE-RL Framework</h2>
 
-                function foj_stop() {
-                  document.getElementById('foj_image').style.opacity = "0";
-                }
-                foj_stop()
-              </script>
-            </td>
-            <td style="padding:20px;width:75%;vertical-align:middle">
-              <a href="http://vision.seas.harvard.edu/foj/">
-                <papertitle>Field of Junctions: Extracting Boundary Structure at Low SNR</papertitle>
-              </a>
-              <br>
-              <strong>Dor Verbin</strong>,
-              <a href="https://www.eecs.harvard.edu/~zickler">Todd Zickler</a>
-              <br>
-							<em>ICCV</em>, 2021
-              <br>
-              <a href="http://vision.seas.harvard.edu/foj/">project page</a>
-              /
-              <a href="https://arxiv.org/abs/2011.13866">arXiv</a>
-              /
-                <a href="https://github.com/dorverbin/fieldofjunctions">code</a>
-              /
-              <a href="https://www.youtube.com/watch?v=M0VwBw_aVQA">video</a>
-              <p></p>
-              <p>By modeling each patch in an image as a generalized junction, our model uses concurrencies between different boundary elements such as junctions, corners, and edges, and manages to extract boundary structure from extremely noisy images where previous methods fail.</p>
-            </td>
-          </tr>            
+    <div class="prose">
+        <p>SE-RL is built upon a nested loop framework designed to iteratively enhance an LLM's capability as an automated RL algorithm designer. The outer loop enhances the LLM's research capabilities through the Dual-Level Enhancement Kit, while the inner loop trains an execution agent using the LLM-designed algorithm.</p>
+    </div>
 
-            
-            
-						
-          <tr onmouseout="uniqueness_stop()" onmouseover="uniqueness_start()">
-            <td style="padding:20px;width:25%;vertical-align:middle">
-              <div class="one">
-                <div class="two" id='uniqueness_image'><video  width=100% height=100% muted autoplay loop>
-                <source src="img/uniqueness.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-                </video></div>
-                <img src='img/uniqueness.png' width="160">
-              </div>
-              <script type="text/javascript">
-                function uniqueness_start() {
-                  document.getElementById('uniqueness_image').style.opacity = "1";
-                }
+    <div class="figure-container padded" style="background: #fff;">
+        <img src="img/framework_overview.png" alt="SE-RL Framework Overview">
+        <div class="figure-caption" style="background: var(--color-surface);">
+            <strong>Figure 2</strong> — Overview of the SE-RL Framework. The framework consists of two core schemes: (1) an outer loop for enhancing the LLM's research capabilities, and (2) an inner loop for training an execution agent with hybrid environment training.
+        </div>
+    </div>
 
-                function uniqueness_stop() {
-                  document.getElementById('uniqueness_image').style.opacity = "0";
-                }
-                uniqueness_stop()
-              </script>
-            </td>
-            <td style="padding:20px;width:75%;vertical-align:middle">
-              <a href="https://arxiv.org/abs/2003.08885">
-                <papertitle>Unique Geometry and Texture from Corresponding Image Patches</papertitle>
-              </a>
-              <br>
-              <strong>Dor Verbin</strong>,
-              <a href="https://www.eecs.harvard.edu/~sjg/">Steven J. Gortler</a>,
-              <a href="https://www.eecs.harvard.edu/~zickler">Todd Zickler</a>
-              <br>
-							<em>TPAMI</em>, 2021
-              <br>
-              <a href="https://arxiv.org/abs/2003.08885">arXiv</a>
-              /
-              <a href="https://ieeexplore.ieee.org/document/9435133">paper</a>
-              /
-              <a href="https://www.youtube.com/watch?v=sHNtMOE7q-I">video (combined with SfT)</a>                
-              <p></p>
-              <p>We present a simple condition for the uniqueness of a solution to the shape from texture problem. We show that in the general case four views of a cyclostationary texture satisfy this condition and are therefore sufficient to uniquely determine shape.</p>
-            </td>
-          </tr>            
-            
-            
-						
-          <tr onmouseout="sft_stop()" onmouseover="sft_start()">
-            <td style="padding:20px;width:25%;vertical-align:middle">
-              <div class="one">
-                <div class="two" id='sft_image'>
-                <img src='img/sft_normals.jpg' width="160">
+    <!-- Contributions -->
+    <div class="contrib-grid">
+        <div class="contrib-card">
+            <div class="icon icon-1">🧬</div>
+            <h3>Self-Evolutional Framework</h3>
+            <p>The first automated RL research framework using LLMs to design complete RL algorithms with continuous improvement through dual-level prompt refinement and weight optimization.</p>
+        </div>
+        <div class="contrib-card">
+            <div class="icon icon-2">🌊</div>
+            <h3>Dynamic Market Simulator</h3>
+            <p>Multi-agent system with market makers, informed traders, and noise traders that realistically models market impact through agent-based order book updates.</p>
+        </div>
+        <div class="contrib-card">
+            <div class="icon icon-3">⚖️</div>
+            <h3>Hybrid Training</h3>
+            <p>Novel hybrid environment training paradigm that combines static historical data with dynamic simulations using adaptive loss rebalancing.</p>
+        </div>
+        <div class="contrib-card">
+            <div class="icon icon-4">📈</div>
+            <h3>Dual-Level Enhancement</h3>
+            <p>DEK operates at both high-level (macro-micro prompt engineering with in-context learning) and low-level (STE-based differentiable weight optimization).</p>
+        </div>
+    </div>
+
+    <!-- High-Level Enhancement -->
+    <div style="margin-top: 56px;">
+        <h3 style="font-family: var(--font-display); font-size: 24px; margin-bottom: 20px;">Dual-Level Enhancement Kit</h3>
+        <div class="figure-container padded" style="background: #fff;">
+            <img src="img/framework_detail.png" alt="High-Level Enhancement Kit">
+            <div class="figure-caption" style="background: var(--color-surface);">
+                <strong>Figure 3</strong> — High-level enhancement workflow. Each prompt consists of macro (task background) and micro (module-specific) parts, optimized through an Instruction Refine Agent and evolved via in-context learning.
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"><hr></div>
+
+<!-- Results -->
+<section class="section reveal" id="results">
+    <div class="section-label">Experiments</div>
+    <h2>Results &amp; Analysis</h2>
+
+    <div class="prose">
+        <p>We conducted extensive evaluations across 200 stocks from CSI100 and NASDAQ100, demonstrating consistent superiority across all key metrics. SE-RL achieves a 28.4% improvement in Price Advantage over the strongest baseline MacMic on CSI100.</p>
+    </div>
+
+    <!-- CSI100 Results -->
+    <h3 style="font-family: var(--font-display); font-size: 22px; margin: 40px 0 16px;">CSI100 Benchmark</h3>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>PA (bps) ↑</th>
+                    <th>PA-std (bps) ↓</th>
+                    <th>WR ↑</th>
+                    <th>GLR ↑</th>
+                    <th>AFI ↓</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>TWAP</td><td>-0.12</td><td>3.12</td><td>0.49</td><td>0.97</td><td>0.00</td></tr>
+                <tr><td>VWAP</td><td>-3.29</td><td>4.87</td><td>0.39</td><td>0.78</td><td>0.04</td></tr>
+                <tr><td>AC</td><td>-1.24</td><td>4.21</td><td>0.45</td><td>1.02</td><td>0.00</td></tr>
+                <tr><td>DDQN</td><td>-1.21</td><td>7.09</td><td>0.47</td><td>0.99</td><td>0.05</td></tr>
+                <tr><td>PPO</td><td>-0.98</td><td>7.01</td><td>0.52</td><td>0.92</td><td>0.03</td></tr>
+                <tr><td>ODP</td><td>0.32</td><td>6.78</td><td>0.53</td><td>1.07</td><td>0.10</td></tr>
+                <tr><td>HALOP</td><td>2.89</td><td>6.12</td><td>0.65</td><td>1.12</td><td>0.07</td></tr>
+                <tr><td>MacMic</td><td>3.31</td><td>6.23</td><td>0.72</td><td>1.37</td><td>0.02</td></tr>
+                <tr class="ours">
+                    <td>SE-RL (Ours)</td>
+                    <td>4.25 <span class="improvement">+0.94</span></td>
+                    <td>5.12 <span class="improvement">+2.00</span></td>
+                    <td>0.99 <span class="improvement">+0.27</span></td>
+                    <td>1.63 <span class="improvement">+0.26</span></td>
+                    <td>0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- NASDAQ100 Results -->
+    <h3 style="font-family: var(--font-display); font-size: 22px; margin: 40px 0 16px;">NASDAQ100 Benchmark</h3>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>PA (bps) ↑</th>
+                    <th>PA-std (bps) ↓</th>
+                    <th>WR ↑</th>
+                    <th>GLR ↑</th>
+                    <th>AFI ↓</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>TWAP</td><td>-0.19</td><td>4.31</td><td>0.49</td><td>1.01</td><td>0.00</td></tr>
+                <tr><td>VWAP</td><td>-2.89</td><td>4.72</td><td>0.35</td><td>0.79</td><td>0.02</td></tr>
+                <tr><td>AC</td><td>-2.31</td><td>4.39</td><td>0.39</td><td>0.96</td><td>0.00</td></tr>
+                <tr><td>DDQN</td><td>-1.98</td><td>6.89</td><td>0.45</td><td>0.97</td><td>0.03</td></tr>
+                <tr><td>PPO</td><td>-1.20</td><td>6.79</td><td>0.46</td><td>0.96</td><td>0.04</td></tr>
+                <tr><td>ODP</td><td>1.03</td><td>6.82</td><td>0.54</td><td>1.05</td><td>0.12</td></tr>
+                <tr><td>HALOP</td><td>2.75</td><td>5.87</td><td>0.63</td><td>1.13</td><td>0.05</td></tr>
+                <tr><td>MacMic</td><td>3.14</td><td>5.69</td><td>0.74</td><td>1.28</td><td>0.01</td></tr>
+                <tr class="ours">
+                    <td>SE-RL (Ours)</td>
+                    <td>4.86 <span class="improvement">+1.72</span></td>
+                    <td>3.97 <span class="improvement">-0.34</span></td>
+                    <td>0.90 <span class="improvement">+0.16</span></td>
+                    <td>1.47 <span class="improvement">+0.19</span></td>
+                    <td>0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Comprehensive Performance Figures -->
+    <div class="figure-container" style="margin-top: 48px;">
+        <img src="img/multi_dim_comparison.png" alt="Comprehensive Performance Validation">
+        <div class="figure-caption">
+            <strong>Figure 8</strong> — Comprehensive Performance Validation. (A) Convergence analysis showing SE-RL closing the gap to the theoretical Oracle limit. (B) Cumulative return curves over the test set. (C) AFI distribution showing superior risk control. (D) Robustness analysis showing antifragility in high volatility.
+        </div>
+    </div>
+
+    <!-- Ablation -->
+    <h3 style="font-family: var(--font-display); font-size: 22px; margin: 48px 0 16px;">Ablation Study</h3>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>High-Level</th>
+                    <th>Low-Level</th>
+                    <th>Dynamic</th>
+                    <th>Hybrid</th>
+                    <th>PA (bps) ↑</th>
+                    <th>WR ↑</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>—</td><td>—</td><td>—</td><td>—</td><td>2.26</td><td>0.65</td></tr>
+                <tr><td>✓</td><td>—</td><td>—</td><td>—</td><td>2.96 <span class="improvement">+0.70</span></td><td>0.73 <span class="improvement">+0.08</span></td></tr>
+                <tr><td>✓</td><td>✓</td><td>—</td><td>—</td><td>3.34 <span class="improvement">+0.38</span></td><td>0.75 <span class="improvement">+0.02</span></td></tr>
+                <tr><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>3.87 <span class="improvement">+0.53</span></td><td>0.80 <span class="improvement">+0.05</span></td></tr>
+                <tr class="ours"><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>4.25 <span class="improvement">+0.38</span></td><td>0.99 <span class="improvement">+0.19</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Market Impact Figure -->
+    <div class="figure-container" style="margin-top: 48px;">
+        <img src="img/paper_page8.png" alt="Performance under various market impacts">
+        <div class="figure-caption">
+            <strong>Figure 6</strong> — Performance analysis under various market impacts. (a) SE-RL achieves the best extra return across all impact scenarios. (b) SE-RL consistently trades with the lowest non-fulfillment risk.
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"><hr></div>
+
+<!-- Evolution Case Study -->
+<section class="section reveal" id="evolution">
+    <div class="section-label">Case Study</div>
+    <h2>The Evolution of a Reward Function</h2>
+
+    <div class="prose">
+        <p>SE-RL functions as a genuine "AI Researcher," automatically discovering core principles of quantitative trading through iterative evolution. Below we show how the reward function evolved from simple profit maximization to a sophisticated, volatility-aware risk management strategy.</p>
+    </div>
+
+    <div class="comparison-grid">
+        <div>
+            <h3 style="font-family: var(--font-display); font-size: 18px; margin-bottom: 16px; color: var(--color-text-dim);">
+                Iteration 0 — Simple Profit
+            </h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    reward_v0.py
                 </div>
-                <img src='img/sft.jpg' width="160">
+                <pre><span class="keyword">def</span> <span class="func">calculate_reward</span>(<span class="param">self</span>, <span class="param">pv_t</span>, <span class="param">pv_t1</span>):
+    <span class="comment"># Simple profit delta</span>
+    <span class="keyword">return</span> pv_t - pv_t1</pre>
+            </div>
+        </div>
+        <div>
+            <h3 style="font-family: var(--font-display); font-size: 18px; margin-bottom: 16px; color: var(--color-accent-2);">
+                Iteration 8 — Evolved Strategy
+            </h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    reward_v8.py
                 </div>
-              <script type="text/javascript">
-                function sft_start() {
-                  document.getElementById('sft_image').style.opacity = "1";
-                }
+                <pre><span class="keyword">def</span> <span class="func">calculate_reward</span>(<span class="param">self</span>, <span class="param">profit</span>, <span class="param">inv</span>, <span class="param">vol</span>):
+    reward = profit
+    <span class="comment"># Transaction cost awareness</span>
+    reward -= <span class="number">0.001</span> * <span class="func">abs</span>(profit)
+    <span class="comment"># Inventory risk penalty</span>
+    inv_pen = <span class="number">0.05</span> * (inv ** <span class="number">2</span>)
+    reward -= inv_pen
+    <span class="comment"># Volatility-adaptive scaling</span>
+    reward -= <span class="number">0.1</span> * inv_pen * vol
+    <span class="keyword">return</span> reward</pre>
+            </div>
+        </div>
+    </div>
 
-                function sft_stop() {
-                  document.getElementById('sft_image').style.opacity = "0";
-                }
-                sft_stop()
-              </script>
-            </td>
-            <td style="padding:20px;width:75%;vertical-align:middle">
-              <a href="http://vision.seas.harvard.edu/sft/">
-                <papertitle>Toward a Universal Model for Shape from Texture</papertitle>
-              </a>
-              <br>
-              <strong>Dor Verbin</strong>,
-              <a href="https://www.eecs.harvard.edu/~zickler">Todd Zickler</a>
-              <br>
-							<em>CVPR</em>, 2020
-              <br>
-              <a href="http://vision.seas.harvard.edu/sft/">project page</a>
-              /
-              <a href="http://vision.seas.harvard.edu/sft/SFT_CVPR2020.pdf">paper</a>
-              /
-              <a href="http://vision.seas.harvard.edu/sft/SFT_CVPR2020_supp.pdf">supplement</a>
-                /
-                <a href="https://github.com/dorverbin/shapefromtexture">code and data</a>
-              /
-              <a href="https://www.youtube.com/watch?v=SAcOQc8tGqk">video</a>
-              <p></p>
-              <p>We formulate the shape from texture problem as a 3-player game. This game simultaneously estimates the underlying flat texture and object shape, and it succeeds for a large variety of texture types.</p>
-            </td>
-          </tr>            
-            
-					
-        </tbody></table>
-        <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
-          <tr>
-            <td style="padding:0px">
-              <br>
-              <p style="text-align:right;font-size:small;">
-                I'm also using <a href="http://jonbarron.info" style="text-align:right;font-size:small;">Jon's</a> website template.
-              </p>
-            </td>
-          </tr>
-        </tbody></table>
-      </td>
-    </tr>
-  </table>
+    <div class="evolution-steps" style="margin-top: 36px;">
+        <div class="evo-step">
+            <span class="step-num">ITER 0</span>
+            <div>
+                <h4>PnL Maximization</h4>
+                <p>Simple portfolio value delta — the starting point.</p>
+            </div>
+        </div>
+        <div class="evo-step">
+            <span class="step-num">ITER 2</span>
+            <div>
+                <h4>Transaction Cost Discovery</h4>
+                <p>LLM discovers that returns must be net of trading costs to avoid over-trading.</p>
+            </div>
+        </div>
+        <div class="evo-step">
+            <span class="step-num">ITER 3</span>
+            <div>
+                <h4>Inventory Risk Management</h4>
+                <p>Quadratic inventory penalty emerged — controlling position size is critical for risk.</p>
+            </div>
+        </div>
+        <div class="evo-step">
+            <span class="step-num">ITER 6+</span>
+            <div>
+                <h4>Volatility-Adaptive Penalties</h4>
+                <p>Risk exposure dynamically scaled by market volatility — a sophisticated, non-trivial discovery.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"><hr></div>
+
+<!-- Empirical Reliability -->
+<section class="section reveal">
+    <div class="section-label">Analysis</div>
+    <h2>Empirical Reliability &amp; Efficiency</h2>
+
+    <div class="figure-container">
+        <img src="img/paper_page11.png" alt="Empirical Analysis">
+        <div class="figure-caption">
+            <strong>Figure 7</strong> — (a) Static environments overestimate performance for large orders; SE-RL's dynamic deployment remains robust. (b) DEK minimizes the alignment gap, driving true PA to convergence. (c) SE-RL reaches SOTA performance 2× faster than human experts. (d) SE-RL autonomously discovers financial principles, evolving from simple profit-seeking to complex risk-aware strategies.
+        </div>
+    </div>
+
+    <!-- Performance under different conditions -->
+    <div class="comparison-grid" style="margin-top: 40px;">
+        <div>
+            <h3 style="font-family: var(--font-display); font-size: 18px; margin-bottom: 16px;">Market Volatility Robustness</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Volatility</th><th>PA (bps)</th><th>WR</th><th>AFI</th></tr></thead>
+                    <tbody>
+                        <tr><td>Low</td><td>3.89</td><td>0.89</td><td>0.01</td></tr>
+                        <tr><td>Medium</td><td>4.25</td><td>0.99</td><td>0.00</td></tr>
+                        <tr class="ours"><td>High</td><td>5.12</td><td>0.95</td><td>0.00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div>
+            <h3 style="font-family: var(--font-display); font-size: 18px; margin-bottom: 16px;">Trading Horizon Stability</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Horizon</th><th>PA (bps)</th><th>WR</th><th>AFI</th></tr></thead>
+                    <tbody>
+                        <tr><td>Short (1M)</td><td>3.50</td><td>0.95</td><td>0.01</td></tr>
+                        <tr><td>Medium (3M)</td><td>4.25</td><td>0.99</td><td>0.00</td></tr>
+                        <tr class="ours"><td>Long (12M)</td><td>5.12</td><td>0.95</td><td>0.00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"><hr></div>
+
+<!-- Citation -->
+<section class="section reveal" id="citation">
+    <div class="section-label">Citation</div>
+    <h2>BibTeX</h2>
+
+    <div class="bibtex-block">
+        <button class="copy-btn" onclick="copyBibtex()">Copy</button>
+        <pre>@inproceedings{serl2026kdd,
+  title     = {Large Language Model (LLM) as an Excellent
+               Reinforcement Learning Researcher in both
+               Single-Agent and Multi-Agent Scenarios},
+  author    = {Anonymous},
+  booktitle = {Proceedings of the 32nd ACM SIGKDD Conference
+               on Knowledge Discovery and Data Mining},
+  year      = {2026},
+  address   = {Jeju, Korea}
+}</pre>
+    </div>
+</section>
+
+<footer>
+    <p>SE-RL · KDD 2026 · <a href="#">Paper</a> · <a href="#">Code</a></p>
+    <p style="margin-top: 8px; font-size: 12px;">Template inspired by academic project pages</p>
+</footer>
+
+<script>
+    // Navbar visibility on scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('visible', window.scrollY > window.innerHeight * 0.5);
+    });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(el => observer.observe(el));
+
+    // Copy BibTeX
+    function copyBibtex() {
+        const text = document.querySelector('.bibtex-block pre').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+    }
+</script>
+
 </body>
-
 </html>
